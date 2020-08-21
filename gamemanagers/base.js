@@ -62,5 +62,43 @@ module.exports = class BaseManager{
             })
         })
     }
+
+    /**
+     * @param {Array} users Array of Users
+     * @param {Array} options Array of options to select from
+     * @param {String} question Prompt to poll
+     */
+    async poll(users, options, question){
+        return new Promise((res, rej) => {
+            const embed = new MessageEmbed()
+            .setTitle(question);
+            for(let elem of options){
+                embed.addField(elem, '\u200b');
+            }
+            let msg = await this.channel.send(embed);
+            for(let i in options){
+                let charcode = i.toString().charCodeAt(0) - 49;
+                let str = String.fromCharCode(charcode)
+                let emote = emotes.get(str); //Emote map hasn't been formally added yet
+                msg.react(emote);
+            }
+            let filter = (r, u) => users.map(user => user.id).includes(u.id);
+            let collector = msg.createReactionCollector(filter);
+            const responses = new Collection();
+            collector.on('collect', (reaction, user) => {
+                reaction.remove();
+                responses.set(user.id, reaction);
+                if(responses.size === users.length) collector.stop();
+            })
+            collector.on('end', () => {
+                let returndata = new Collection()
+                responses.each((val) => {
+                    returndata.set(val, responses.keyArray());
+                })
+                res(returndata);
+            })
+            
+        })
+    }  
     
 }
