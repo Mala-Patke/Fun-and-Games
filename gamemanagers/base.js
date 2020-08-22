@@ -1,4 +1,5 @@
-const { User, TextChannel, Client, MessageEmbed, Collection, Collection } = require("discord.js");
+const { User, TextChannel, Client, Collection, MessageReaction, Message } = require("discord.js");
+const emotes = require('../util/emotes');
 
 module.exports = class BaseManager{
     /**
@@ -38,49 +39,39 @@ module.exports = class BaseManager{
     /**
      * @param {User} user User making the decision
      * @param {Array} options Array of Options to select From
-     * @param {String} question The prompt the user recieves
+     * @param {Message} msg The prompt the user recieves
      */
-    async reactionPrompt(user, options, question){
+    async reactionPrompt(user, options, msg){
         return new Promise((res, rej) => {
-            const embed = new MessageEmbed()
-                .setTitle(question)
-                .setDescription(options.join(" "))
-            let msg = await this.channel.send(embed);
-            let emotes = new Collection();
             for(let i in options){
-                let charcode = i.toString().charCodeAt(0) - 49;
+                let charcode = i.toString().charCodeAt(0) + 49;
                 let str = String.fromCharCode(charcode)
-                let emote = emotes.get(str); //Emote map hasn't been formally added yet
+                let emote = emotes[str];
                 msg.react(emote);
             }
             let filter = (r, u) => u.id === user.id;
             let collector = msg.createReactionCollector(filter);
             collector.on('collect', (reaction, user) => {
-                let selection = emotes.findKey(key => key === reaction.name);
+                collector.stop();
+                let selection = parseInt(String.fromCharCode(reaction.emoji.name.split("_")[2].charCodeAt(0) - 49));
                 if(!selection) rej('Fail')
-                else res(selection)
+                else res(options[selection])
             })
         })
     }
 
     /**
-     * @param {Array} users Array of Users
-     * @param {Array} options Array of options to select from
-     * @param {String} question Prompt to poll
-     * @returns {Collection} reaction => array of users who reacted with said reaction.
+     * @param {Array<Number>} users Array of Users
+     * @param {Array<User>} options Array of options to select from
+     * @param {Message} Message Prompt to poll
+     * @returns {Collection<MessageReaction, Array<User>} Reaction => Array<users>
      */
-    async poll(users, options, question){
-        return new Promise((res, rej) => {
-            const embed = new MessageEmbed()
-            .setTitle(question);
-            for(let elem of options){
-                embed.addField(elem, '\u200b');
-            }
-            let msg = await this.channel.send(embed);
+    async createpoll(users, options, msg){
+        return new Promise((res) => {
             for(let i in options){
-                let charcode = i.toString().charCodeAt(0) - 49;
+                let charcode = i.toString().charCodeAt(0) + 49;
                 let str = String.fromCharCode(charcode)
-                let emote = emotes.get(str); //Emote map hasn't been formally added yet
+                let emote = emotes[str];
                 msg.react(emote);
             }
             let filter = (r, u) => users.map(user => user.id).includes(u.id);
@@ -100,6 +91,6 @@ module.exports = class BaseManager{
             })
             
         })
-    }  
+    }
     
 }
