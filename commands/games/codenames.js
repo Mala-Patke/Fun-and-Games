@@ -1,0 +1,1 @@
+words = ["doctor","eagle","oil","plastic","elephant","Germany","nail","hammer","electricity","milk","pipe","computer","Discord","Lifeline","Steam"]
