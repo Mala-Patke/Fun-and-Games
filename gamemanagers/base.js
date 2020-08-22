@@ -1,4 +1,4 @@
-const { User, TextChannel, Client, MessageEmbed, Collection } = require("discord.js");
+const { User, TextChannel, Client, MessageEmbed, Collection, Collection } = require("discord.js");
 
 module.exports = class BaseManager{
     /**
@@ -67,6 +67,7 @@ module.exports = class BaseManager{
      * @param {Array} users Array of Users
      * @param {Array} options Array of options to select from
      * @param {String} question Prompt to poll
+     * @returns {Collection} reaction => array of users who reacted with said reaction.
      */
     async poll(users, options, question){
         return new Promise((res, rej) => {
