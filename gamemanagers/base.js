@@ -40,6 +40,7 @@ module.exports = class BaseManager{
      * @param {User} user User making the decision
      * @param {Array} options Array of Options to select From
      * @param {Message} msg The prompt the user recieves
+     * @returns {String} Selected Option
      */
     async reactionPrompt(user, options, msg){
         return new Promise((res, rej) => {
@@ -63,8 +64,8 @@ module.exports = class BaseManager{
     /**
      * @param {Array<Number>} users Array of Users
      * @param {Array<User>} options Array of options to select from
-     * @param {Message} Message Prompt to poll
-     * @returns {Collection<MessageReaction, Array<User>} Reaction => Array<users>
+     * @param {Message} msg Prompt to poll
+     * @returns {Promise<Collection<Number, Array<User>>} Selection => Array<users>
      */
     async createpoll(users, options, msg){
         return new Promise((res) => {
@@ -78,14 +79,18 @@ module.exports = class BaseManager{
             let collector = msg.createReactionCollector(filter);
             const responses = new Collection();
             collector.on('collect', (reaction, user) => {
-                reaction.remove();
-                responses.set(user.id, reaction);
+                reaction.users.remove(user);
+                responses.set(user.id, reaction.emoji.name);
                 if(responses.size === users.length) collector.stop();
             })
             collector.on('end', () => {
-                let returndata = new Collection()
+                msg.reactions.removeAll();
+                let returndata = new Collection();
+                let iterator = 0;
                 responses.each((val) => {
-                    returndata.set(val, responses.keyArray());
+                    let value = emotes[val].charCodeAt(0) - 49;
+                    returndata.set(responses.keyArray()[iterator], parseInt(String.fromCharCode(value)));
+                    iterator++;
                 })
                 res(returndata);
             })
