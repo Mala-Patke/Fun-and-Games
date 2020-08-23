@@ -16,6 +16,7 @@ module.exports = class BaseManager{
         this.maxplayers = maxplayers;
     }
 
+    
     /**
      * @returns {Object} User for host, array of users for players
      */
