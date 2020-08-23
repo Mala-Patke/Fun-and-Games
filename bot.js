@@ -24,7 +24,7 @@ client.once('ready', async () => {
     console.log(`${client.user.username} is all ready to go!`)
 })
 
-client.on('error', err => console.error(err))
+client.on('error', err => console.error(err));
 
 client.once('rateLimit', rld => console.log(rld));
 
