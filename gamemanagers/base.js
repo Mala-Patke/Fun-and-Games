@@ -1,24 +1,24 @@
-const { User, TextChannel, Client, Collection, MessageReaction, Message } = require("discord.js");
+const { User, TextChannel, Client, Collection, Message } = require("discord.js");
 const emotes = require('../util/emotes');
 
 module.exports = class BaseManager{
     /**
-     * 
      * @param {User} host 
      * @param {TextChannel} channel 
      * @param {Client} client 
-     * @param {Number} maxplayers 
+     * @param {Number} maxplayers
+     * @param {Number} minplayers
      */
-    constructor(host, channel, client, maxplayers){
+    constructor(host, channel, client, maxplayers, minplayers){
         this.host = host;
         this.channel = channel;
         this.client = client;
         this.maxplayers = maxplayers;
+        this.minplayers = minplayers;
     }
-
     
     /**
-     * @returns {Object} User for host, array of users for players
+     * @returns {Promise<Array>} 
      */
     async startGame(){
         return new Promise((res) => {
@@ -27,12 +27,13 @@ module.exports = class BaseManager{
             let collector = this.channel.createMessageCollector(filter);
             let iterator = 0;
             collector.on('collect', collected => {
+                this.channel.send(`${collected.author} has joined the game. We now have ${iterator} players!`)
                 let start = (collected.content === responses[0] && collected.author.id === this.host.id) ||
-                            iterator === this.maxplayers;
+                    iterator === this.maxplayers;
                 if(start) collector.stop();
             })
             collector.on('end', collected => {
-                res({host: this.host, players: collected.array()});
+                res(collected.array());
             })
         })
     }
@@ -41,7 +42,7 @@ module.exports = class BaseManager{
      * @param {User} user User making the decision
      * @param {Array} options Array of Options to select From
      * @param {Message} msg The prompt the user recieves
-     * @returns {String} Selected Option
+     * @returns {Promise<String>} Selected Option
      */
     async reactionPrompt(user, options, msg){
         return new Promise((res, rej) => {
@@ -65,8 +66,8 @@ module.exports = class BaseManager{
     /**
      * @param {Array<Number>} users Array of Users
      * @param {Array<User>} options Array of options to select from
-     * @param {Message} msg Prompt to poll
-     * @returns {Promise<Collection<Number, Array<User>>} Selection => Array<users>
+     * @param {Message} msg Poll Message
+     * @returns {Promise<Collection<User, Number>} User => User's Selection
      */
     async createpoll(users, options, msg){
         return new Promise((res) => {
