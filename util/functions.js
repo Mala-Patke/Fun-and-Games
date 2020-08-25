@@ -2,7 +2,7 @@
 module.exports = {
     /**
      * @param {Array} a
-     * @returns {Array}
+     * @returns {Array} a shuffled
      */
     shuffle(a) {
         for (let i = 0; i < a.length-1; i++) {
@@ -18,5 +18,12 @@ module.exports = {
     isInt(a){
         if(a === parseInt(a, 10)) return true;
         return false;
+    },
+    /**
+     * @param {Array} arr
+     * @returns Most Mentioned Value
+     */
+    mode(arr){
+        return arr.sort((a,b) => arr.filter(v => v === a).length - arr.filter(v => v===b).length).pop();
     }
 }

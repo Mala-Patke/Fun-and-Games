@@ -6,7 +6,7 @@ module.exports = class CAHCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'cah',
-			group: 'first',
+			group: 'games',
 			memberName: 'cah',
 			description: 'Starts a CAH game.',
 		});

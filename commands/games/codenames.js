@@ -1,38 +1,35 @@
-var words = ["doctor","eagle","oil","plastic","elephant","Germany","nail","hammer","electricity","milk","pipe","computer","Discord","Lifeline","Steam","Orange"];
-var assasinWord = "";
-var blueWords = [];
-var redWords = [];
-var bystandWords = [];
-var tempIndex;
-var element;
+const { Command } = require('discord.js-commando');
+const manager = require('../../gamemanagers/codenames/codenamesmanager');
+const { MessageEmbed, Message } = require('discord.js');
 
-for (i = 0; i < 5; i++){
-    tempIndex = Math.floor(Math.random()*words.length);
-    element = words[tempIndex]
-    blueWords.push(element);
-    words = words.filter(el => el != element) 
+module.exports = class codenames extends Command{
+    constructor(client){
+        super(client, {
+            name: 'codenames',
+            aliases: ['cd'],
+            group: 'games',
+            memberName: 'cd',
+            description: 'Tests the codenames initializer',
+        });
+    }
+
+    /**
+     * @param {Message} message 
+     */
+    async run(message){
+        console.log('this runs')
+       let gamemanager = new manager(message.author, message.channel, this.client);
+       gamemanager.init()
+        .then(obj => {
+            console.log(obj);
+           message.channel.send(`
+                red operator(s): ${obj.redop.join(", ")}\n
+                red spymaster: ${obj.redsm}\n
+                blue operator(s): ${obj.blueop.join(", ")}\n
+                blue spymaster: ${obj.bluesm}\n
+                words:  \`\`\`${obj.board.map(e => e.word).join(", ")}\`\`\`
+           `)
+       })
+       .catch(err => message.channel.send(`Error: ${err}`))
+    }
 }
-
-for (i = 0; i < 5; i++){
-    tempIndex = Math.floor(Math.random()*words.length);
-    element = words[tempIndex]
-    redWords.push(element);
-    words = words.filter(el => el != element) 
-}
-
-for (i = 0; i < 5; i++){
-    tempIndex = Math.floor(Math.random()*words.length);
-    element = words[tempIndex]
-    bystandWords.push(element);
-    words = words.filter(el => el != element)
-}
-tempIndex = Math.floor(Math.random()*words.length);
-assasinWord = words[tempIndex] 
-
-
-console.log(assasinWord)
-console.log(blueWords)
-console.log(redWords)
-console.log(words.length)
-
-

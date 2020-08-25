@@ -1,39 +1,53 @@
-const { User, TextChannel, Client, Collection, Message } = require("discord.js");
+const { User, TextChannel, Collection, Message } = require("discord.js");
 const emotes = require('../util/emotes');
+const { CommandoClient } = require("discord.js-commando");
 
 module.exports = class BaseManager{
     /**
      * @param {User} host 
      * @param {TextChannel} channel 
-     * @param {Client} client 
-     * @param {Number} maxplayers
-     * @param {Number} minplayers
+     * @param {CommandoClient} client 
      */
-    constructor(host, channel, client, maxplayers, minplayers){
+    constructor(host, channel, client/*, maxplayers, minplayers*/){
         this.host = host;
         this.channel = channel;
         this.client = client;
-        this.maxplayers = maxplayers;
-        this.minplayers = minplayers;
+//        this.maxplayers = maxplayers;
+//        this.minplayers = minplayers;
     }
     
     /**
      * @returns {Promise<Array>} 
      */
-    async startGame(){
+    async startGame(min, max){
         return new Promise((res) => {
-            let responses = [`${this.client.commandPrefix}start`, `${this.client.commandPrefix}join`]
-            let filter = m => responses.includes(m.content)
+            let filter = m => m.content.startsWith(this.client.commandPrefix);
+            this.channel.send(`${this.channel.lastMessage.author} has started a game! Respond with ${this.client.commandPrefix}join to join`)
             let collector = this.channel.createMessageCollector(filter);
-            let iterator = 0;
+            let members = [];
             collector.on('collect', collected => {
-                this.channel.send(`${collected.author} has joined the game. We now have ${iterator} players!`)
-                let start = (collected.content === responses[0] && collected.author.id === this.host.id) ||
-                    iterator === this.maxplayers;
-                if(start) collector.stop();
+                let str = collected.content.substr(this.client.commandPrefix.length, collected.content.length);
+                let obj = {
+                    'start':(member) => {
+                        if(member.id !== this.host.id) return this.channel.send("Only the host can start the game!");
+                        if(members.length < min) return this.channel.send('There are not enough players to start this game!');
+                        collector.stop();
+                    },
+                    'join':(member) => {
+                        if(members.includes(member.id)) return this.channel.send(`${member}, you've already joined!`);
+                        members.push(member);
+                        this.channel.send(`${member} has joined! (${members.length}/${max})`);
+                    }
+                }
+                console.log(str);
+                let x = obj[str]
+                try{
+                    x(collected.author);
+                } catch {}
+                if(members.length === max) obj.start(this.host);
             })
             collector.on('end', collected => {
-                res(collected.array());
+                res(collected.array().map(m => m.author));
             })
         })
     }

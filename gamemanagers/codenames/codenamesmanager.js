@@ -4,13 +4,17 @@ const codenameswords = require('./codenameswords.json');
 const emotes = require('../../util/emotes');
 
 module.exports = class CodenamesManager extends Base{
-    constructor(host, channel, client, maxplayers, minplayers){
+    minplayers = 4;
+    maxplayers = 12;
+    constructor(host, channel, client){
         super(...arguments);
-        this.maxplayers = 12;
-        this.minplayers = 4;
     }
+    /**
+     * @returns {Object} redop, redsm, blueop, bluesm, board
+     */
     init(){
         return new Promise(async (res, rej) => {
+            
             let players = await this.startGame();
             players.push(this.host);
 
@@ -25,7 +29,7 @@ module.exports = class CodenamesManager extends Base{
             
             let board = [{word: 'test', role:'test'}];
             let teamselect = Math.floor(Math.random() * 2);
-            for(let i = 0; i < 24; i++){
+            for(let i = 0; i <= 24; i++){
                 let randomword = codenameswords[Math.floor(Math.random()*codenameswords.length)];
                 if(!board.map(w => w.word).includes(randomword)){
                     if(i <= 7){
@@ -38,8 +42,9 @@ module.exports = class CodenamesManager extends Base{
                     else board.push({word: randomword, role:'assassin'});
                 } else i--;
             }
+            board.slice(2, board.length);
             shuffle(board);
-            
+
             res({
                 redop: redop, 
                 redsm: redsm,

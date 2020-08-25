@@ -4,7 +4,8 @@ require('dotenv').config();
 
 const client = new CommandoClient({
     owner: '674140360079048714',
-    commandPrefix: '+'
+    commandPrefix: '+',
+    
 })
 
 client.registry
@@ -15,7 +16,7 @@ client.registry
         ['misc', 'Misc']
 	])
 	.registerDefaultGroups()
-	.registerDefaultCommands({ help: false })
+	.registerDefaultCommands({ help: false, unknownCommand: false })
     .registerCommandsIn(path.join(__dirname, 'commands'));
     
 client.once('ready', async () => {
